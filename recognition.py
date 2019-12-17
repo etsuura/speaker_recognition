@@ -167,6 +167,7 @@ def train(train_wav_files, clf, model, encoder, width, speaker_dict):
             i += 1
 
         print(wav_file)
+        model.reset()
         # print('answer:', answer)
 
     print("Train Finish!")
@@ -207,17 +208,11 @@ def test(test_wav_files, clf, model, encoder, width, speaker_dict):
 
         print(wav_file)
 
-        if 'test' in wav_file:
-            print('answer:', answer)
-            print('prediction:', prediction)
-            print('accuracy:', np.sum(np.array(answer) == np.array(prediction)))
-
-
-        print(wav_file)
 
         print('answer:', answer)
         print('prediction:', prediction)
         print('accuracy:', np.sum(np.array(answer) == np.array(prediction)))
+        print("")
 
 def main():
     TrainDir = "train"
@@ -243,11 +238,14 @@ def main():
 
     #Todo use dir name
     speaker_dict = {
-        'm0001': 1,
-        'f0002': 2
+        'jvs001': 1,
+        'jvs002': 2
     }
 
+
     train(train_wav_files, clf, model, encoder, width, speaker_dict)
+    # model.save()
+
     test(test_wav_files, clf, model, encoder, width, speaker_dict)
 
     # i = 0
