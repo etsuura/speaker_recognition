@@ -9,7 +9,7 @@ args = {
     "DO_LEARNING": True,
     "USE_OLD_MODEL": False,
     "SAVE_MODEL": False,
-    "INPUT_PATH": 'data/',
+    "INPUT_PATH": 'RedDot_data/',
     "OUTPUT_PATH": 'outputs/',
     "MODEL_PATH": '../saved_model',
     "IMG_PATH": './',

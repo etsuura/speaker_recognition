@@ -1,6 +1,7 @@
 import os
 import wave
 import itertools
+import random
 
 from sklearn.preprocessing import MinMaxScaler
 import librosa
@@ -215,6 +216,8 @@ def test(test_wav_files, clf, model, encoder, width, speaker_dict):
         print("")
 
 def main():
+    Mode = "RedDot"
+
     TrainDir = "train"
     TestDir = "test"
 
@@ -224,6 +227,10 @@ def main():
 
     train_wav_files = get_wavfile_list(train_path)
     test_wav_files = get_wavfile_list(test_path)
+
+    random.seed(3)
+    random.shuffle(train_wav_files)
+    random.shuffle(test_wav_files)
 
     width = 40
     encoder = createEncoder(width=width)
@@ -237,15 +244,21 @@ def main():
     clf = createClassifier()
 
     #Todo use dir name
-    speaker_dict = {
-        'jvs001': 1,
-        'jvs002': 2
-    }
+    if Mode == "jvs":
+        speaker_dict = {
+            'jvs001': 1,
+            'jvs002': 2
+        }
+    elif Mode == "RedDot":
+        speaker_dict = {
+            'm0001' : 1,
+            'f0002' : 2,
+            'other' : 3
+        }
 
 
     train(train_wav_files, clf, model, encoder, width, speaker_dict)
     # model.save()
-
     test(test_wav_files, clf, model, encoder, width, speaker_dict)
 
     # i = 0
