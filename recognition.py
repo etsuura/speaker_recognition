@@ -86,6 +86,13 @@ def print_wave_info(wf):
 #     if save:
 #         plt.savefig('mel_spectrogram.png')
 
+def peak_normalize(data):
+    if data.dtype == "float64":
+        amp = max(np.abs(np.max(data)), np.abs(np.min(data)))
+        data = data / amp
+        data.clip(-1, 1)
+        return data
+
 class prepare_param():
     def __init__(self):
         self.data = None
@@ -104,7 +111,6 @@ class prepare_param():
         self.mcep = None
         self.ap = None
         self.bap = None
-
 
     def set_param(self, path):
         self.data, self.fs = get_wave_data(path)
@@ -129,7 +135,8 @@ class prepare_param():
             ]
 
     def collecr_features(self):
-        data = self.data.astype(np.float64)
+        self.data = self.data.astype(np.float64)
+        self.data = peak_normalize(self.data)
         _fo, _time = pw.dio(self.data, self.fs)
         self.fo = pw.stonemask(self.data, _fo, _time, self.fs)
         sp = pw.cheaptrick(self.data, self.fo, _time, self.fs)
@@ -164,7 +171,6 @@ def train(train_wav_files, clf, model, encoder, width, speaker_dict):
 
         all_params = getParam(wav_file)
 
-        #Todo use all_params shape
         for param in all_params:
             encoding = getDenseArray(param, encoder, width=width)
             outputs = model.foward(encoding)
@@ -251,7 +257,7 @@ def main():
     encoder = createEncoder(width=width)
     all_params1 = getParam(train_wav_files[0])
     all_params2 = getParam(test_wav_files[0])
-    assert all_params1.shape[1] != all_params2.shape[1], "The shapes of the learning data and the test data are different"
+    assert all_params1.shape[1] == all_params2.shape[1], "The shapes of the learning data and the test data are different"
 
     model = Region(
         Layer(din=(all_params1.shape[1], width), dout=(20, 20), temporal=True),
