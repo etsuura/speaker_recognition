@@ -237,8 +237,8 @@ def test(test_wav_files, clf, model, encoder, width, speaker_dict):
         print("")
 
 def main():
+    random.seed(0)
     Mode = "jvs"
-
     TrainDir = "train"
     TestDir = "test"
 
@@ -249,7 +249,6 @@ def main():
     train_wav_files = get_wavfile_list(train_path)
     test_wav_files = get_wavfile_list(test_path)
 
-    random.seed(42)
     random.shuffle(train_wav_files)
     random.shuffle(test_wav_files)
 
@@ -270,8 +269,9 @@ def main():
     #Todo use dir name
     if Mode == "jvs":
         speaker_dict = {
-            'jvs001': 1,
-            'jvs002': 2
+            'jvs001' : 1,
+            'jvs002' : 2,
+            'other' : 3
         }
     elif Mode == "RedDot":
         speaker_dict = {
