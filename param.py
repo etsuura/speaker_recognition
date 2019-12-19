@@ -9,7 +9,7 @@ args = {
     "DO_LEARNING": True,
     "USE_OLD_MODEL": False,
     "SAVE_MODEL": False,
-    "INPUT_PATH": 'RedDot_data/',
+    "INPUT_PATH": 'jvs_data/',
     "OUTPUT_PATH": 'outputs/',
     "MODEL_PATH": '../saved_model',
     "IMG_PATH": './',
@@ -61,7 +61,7 @@ parameters = {
         'initialPermanence': 0.21,
         'connectedPermanence': 0.5,
         'maxSegmentsPerCell': 128,
-        'permanenceDecrement': 0.1,
+        'permanenceDecrement': 0.1,     #永続値周り
         'permanenceIncrement': 0.1,
         'predictedSegmentDecrement': 0.0,
     },

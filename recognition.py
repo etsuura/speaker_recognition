@@ -3,7 +3,7 @@ import wave
 import itertools
 import random
 
-from sklearn.preprocessing import MinMaxScaler
+# from sklearn.preprocessing import MinMaxScaler
 import librosa
 import numpy as np
 import matplotlib.pyplot as plt
@@ -88,6 +88,7 @@ def print_wave_info(wf):
 
 class prepare_param():
     def __init__(self):
+        self.data = None
         self.fs = None
         self.fftlen = None
         self.alpha = None
@@ -100,14 +101,16 @@ class prepare_param():
         self.window = None
         self.fo = None
         self.sp = None
-        self.ap = None
         self.mcep = None
+        self.ap = None
+        self.bap = None
+
 
     def set_param(self, path):
         self.data, self.fs = get_wave_data(path)
         self.fftlen = pw.get_cheaptrick_fft_size(self.fs)
         self.alpha = pysptk.util.mcepalpha(self.fs)
-        self.order = 20
+        self.order = 24
         self.frame_period = 5
         self.hop_length = int(self.fs * (self.frame_period * 0.001))
         self.max_files = 100  # number of utterances to be used.
@@ -131,25 +134,39 @@ class prepare_param():
         self.fo = pw.stonemask(self.data, _fo, _time, self.fs)
         sp = pw.cheaptrick(self.data, self.fo, _time, self.fs)
         self.sp = trim_zeros_frames(sp)
-        self.ap = pw.d4c(self.data, self.fo, _time, self.fs)
         self.mcep = pysptk.sp2mc(sp, order=self.order, alpha=self.alpha)
-        return self.mcep
+        self.ap = pw.d4c(self.data, self.fo, _time, self.fs)
+        self.bap = pw.code_aperiodicity(self.ap, self.fs)
+        return self.fo, self.mcep, self.bap
+
+def getParam(path, debug = False):
+    dataclass = prepare_param()
+    dataclass.set_param(path)
+    fo, mcep, bap = dataclass.collecr_features()
+    # log_fo = np.log(fo)
+    # log_power = np.log(mcep[0])
+    # for arr in []:
+    #     print(arr.shape)
+    all_params = np.hstack([fo[:, np.newaxis], mcep[:, 0].reshape(-1, 1), mcep[:, 1:], bap])
+    if debug:
+        print(all_params.shape)
+
+    return all_params
 
 def train(train_wav_files, clf, model, encoder, width, speaker_dict):
     i = 0
     for wav_file in train_wav_files:
         answer, prediction = [], []
 
-        dataclass = prepare_param()
-        dataclass.set_param(wav_file)
-        mels = dataclass.collecr_features()
-
         # sig, fs = get_wave_data(wav_file)
         # sig = normalize_sig(sig)
         # mels = mel_spectrogram(sig, fs)
 
-        for mel in mels:
-            encoding = getDenseArray(mel[1:], encoder, width=width)
+        all_params = getParam(wav_file)
+
+        #Todo use all_params shape
+        for param in all_params:
+            encoding = getDenseArray(param, encoder, width=width)
             outputs = model.foward(encoding)
             output = outputs[-1][0]
 
@@ -182,12 +199,10 @@ def test(test_wav_files, clf, model, encoder, width, speaker_dict):
         # sig = normalize_sig(sig)
         # mels = mel_spectrogram(sig, fs)
 
-        dataclass = prepare_param()
-        dataclass.set_param(wav_file)
-        mels = dataclass.collecr_features()
+        all_params = getParam(wav_file)
 
-        for mel in mels:
-            encoding = getDenseArray(mel[1:], encoder, width=width)
+        for param in all_params:
+            encoding = getDenseArray(param, encoder, width=width)
             outputs = model.foward(encoding)
             output = outputs[-1][0]
 
@@ -216,7 +231,7 @@ def test(test_wav_files, clf, model, encoder, width, speaker_dict):
         print("")
 
 def main():
-    Mode = "RedDot"
+    Mode = "jvs"
 
     TrainDir = "train"
     TestDir = "test"
@@ -228,15 +243,18 @@ def main():
     train_wav_files = get_wavfile_list(train_path)
     test_wav_files = get_wavfile_list(test_path)
 
-    random.seed(3)
+    random.seed(42)
     random.shuffle(train_wav_files)
     random.shuffle(test_wav_files)
 
     width = 40
     encoder = createEncoder(width=width)
+    all_params1 = getParam(train_wav_files[0])
+    all_params2 = getParam(test_wav_files[0])
+    assert all_params1.shape[1] != all_params2.shape[1], "The shapes of the learning data and the test data are different"
 
     model = Region(
-        Layer(din=(20, width), dout=(20, 20), temporal=True),
+        Layer(din=(all_params1.shape[1], width), dout=(20, 20), temporal=True),
         Layer(din=(20, 20), dout=(10, 10), temporal=False)
     )
     model.compile()
