@@ -164,6 +164,7 @@ def train(train_wav_files, clf, model, encoder, width, speaker_dict):
     i = 0
     for wav_file in train_wav_files:
         answer, prediction = [], []
+        anomaly = []
 
         # sig, fs = get_wave_data(wav_file)
         # sig = normalize_sig(sig)
@@ -189,8 +190,11 @@ def train(train_wav_files, clf, model, encoder, width, speaker_dict):
             clf.learn(output, ans)
             answer.append(ans)
             i += 1
+            anomaly.append(model.regions[0].anomaly())
 
         print(wav_file)
+        print(anomaly)
+        print("")
         model.reset()
         # print('answer:', answer)
 
@@ -237,7 +241,7 @@ def test(test_wav_files, clf, model, encoder, width, speaker_dict):
         print("")
 
 def main():
-    random.seed(0)
+    random.seed(42)
     Mode = "jvs"
     TrainDir = "train"
     TestDir = "test"

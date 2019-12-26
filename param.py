@@ -61,7 +61,7 @@ parameters = {
         'initialPermanence': 0.21,
         'connectedPermanence': 0.5,
         'maxSegmentsPerCell': 128,
-        'permanenceDecrement': 0.1,     #永続値周り
+        'permanenceDecrement': 0.3,     #永続値周り
         'permanenceIncrement': 0.1,
         'predictedSegmentDecrement': 0.0,
     },
@@ -84,10 +84,10 @@ if dimension == 1:
         },
         'tm': {
             'columnDimensions': (args["COLUMN_COUNT"],),
-            'activationThreshold': 17,
+            'activationThreshold': 4,
             'cellsPerColumn': args["CELLS_COUNT"],
             'maxSynapsesPerSegment': 64,
-            'minThreshold': 10,
+            'minThreshold': 2,
             'maxNewSynapseCount': 32,
         }
     }
@@ -108,10 +108,10 @@ else:
         },
         'tm': {
             'columnDimensions': layer_shape,
-            'activationThreshold': 16,
+            'activationThreshold': 2,
             'cellsPerColumn': 16,
             'maxSynapsesPerSegment': 32,
-            'minThreshold': 12,
+            'minThreshold': 1,
             'maxNewSynapseCount': 20,
         }
     }
